@@ -1,7 +1,6 @@
 
 # Qwen MCP Tool
 
---> Learn more from the github: https://github.com/jamubc/qwen-mcp-tool
 
 
 
