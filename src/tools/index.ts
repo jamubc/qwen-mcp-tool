@@ -11,8 +11,12 @@ toolRegistry.push(
   pingTool,
   helpTool,
   brainstormTool,
-  fetchChunkTool,
-  timeoutTestTool
+  fetchChunkTool
 );
+
+// Only register test-only tools when explicitly enabled (e.g. e2e test suite).
+if (process.env.QWEN_MCP_TEST_TOOLS) {
+  toolRegistry.push(timeoutTestTool);
+}
 
 export * from './registry.js';
