@@ -1,0 +1,22 @@
+src/tools/registry.ts
+  s_ee2f11177b4ad8::t_2c903f72dc6677 30
+  s_ee2f11177b4ad8::t_356cf756e5e55d 69
+  s_ee2f11177b4ad8::t_005bbaa29dca7c 46
+  s_ee2f11177b4ad8::t_c101e96e4cbf0b 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b2704aa20695c49ac3e072ba6c280c08fff49832",
+  "prompts": {},
+  "sessions": {
+    "s_ee2f11177b4ad8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "028c9955-230c-463b-a09e-1bbbbecad766",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "jamubc <150970140+jamubc@users.noreply.github.com>"
+    }
+  }
+}
