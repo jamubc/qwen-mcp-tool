@@ -1,11 +1,42 @@
+import * as path from 'path';
 import { executeCommand } from './commandExecutor.js';
 import { Logger } from './logger.js';
-import { 
-  ERROR_MESSAGES, 
-  STATUS_MESSAGES, 
-  MODELS, 
+import {
+  ERROR_MESSAGES,
+  STATUS_MESSAGES,
+  MODELS,
   CLI
 } from '../constants.js';
+
+const FILE_REF_PATTERN = /@(\S+)/g;
+
+/**
+ * Rejects @file references that resolve outside the working directory.
+ *
+ * The Qwen CLI inlines the contents of any `@path` token it finds in the
+ * prompt. Because prompt text can originate from untrusted input, an
+ * unrestricted reference such as `@/etc/passwd`, `@~/.ssh/id_rsa`, or
+ * `@../../secret` would exfiltrate arbitrary local files. Constraining
+ * references to the project root preserves the legitimate `@file` feature
+ * while removing the exfiltration primitive.
+ */
+export function assertSafeFileReferences(prompt: string, root: string = process.cwd()): void {
+  const normalizedRoot = path.resolve(root);
+  for (const match of prompt.matchAll(FILE_REF_PATTERN)) {
+    const ref = match[1];
+    const resolved = path.resolve(normalizedRoot, ref);
+    const escapesRoot =
+      resolved !== normalizedRoot && !resolved.startsWith(normalizedRoot + path.sep);
+    // `~` is rejected explicitly: path.resolve treats it as a literal segment,
+    // so a home-directory reference would otherwise appear contained.
+    if (ref.startsWith('~') || escapesRoot) {
+      throw new Error(
+        `Refusing @file reference outside the project directory: "@${ref}". ` +
+        `Only files within ${normalizedRoot} may be referenced.`
+      );
+    }
+  }
+}
 
 import { parseChangeModeOutput, validateChangeModeEdits } from './changeModeParser.js';
 import { formatChangeModeResponse, summarizeChangeModeEdits } from './changeModeTranslator.js';
@@ -87,17 +118,13 @@ ${prompt_processed}
     prompt_processed = changeModeInstructions;
   }
   
+  assertSafeFileReferences(prompt_processed);
+
   const args = [];
   if (model) { args.push(CLI.FLAGS.MODEL, model); }
   if (sandbox) { args.push(CLI.FLAGS.SANDBOX); }
-  
-  // Ensure @ symbols work cross-platform by wrapping in quotes if needed
-  const finalPrompt = prompt_processed.includes('@') && !prompt_processed.startsWith('"') 
-    ? `"${prompt_processed}"` 
-    : prompt_processed;
-    
-  args.push(CLI.FLAGS.PROMPT, finalPrompt);
-  
+  args.push(CLI.FLAGS.PROMPT, prompt_processed);
+
   try {
     return await executeCommand(CLI.COMMANDS.QWEN, args, onProgress);
   } catch (error) {
@@ -110,13 +137,7 @@ ${prompt_processed}
       if (sandbox) {
         fallbackArgs.push(CLI.FLAGS.SANDBOX);
       }
-      
-      // Same @ symbol handling for fallback
-      const fallbackPrompt = prompt_processed.includes('@') && !prompt_processed.startsWith('"') 
-        ? `"${prompt_processed}"` 
-        : prompt_processed;
-        
-      fallbackArgs.push(CLI.FLAGS.PROMPT, fallbackPrompt);
+      fallbackArgs.push(CLI.FLAGS.PROMPT, prompt_processed);
       try {
         const result = await executeCommand(CLI.COMMANDS.QWEN, fallbackArgs, onProgress);
         Logger.warn(`Successfully executed with ${MODELS.QWEN_WEAK_MODEL} fallback.`);

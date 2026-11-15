@@ -1,6 +1,17 @@
 import { spawn } from "child_process";
 import { Logger } from "./logger.js";
 
+/**
+ * Quotes a single argument for cmd.exe (used by spawn's shell:true on Windows).
+ * Embedded quotes are doubled and backslash runs before a quote (or the closing
+ * quote) are doubled so they don't escape it, per CommandLineToArgvW rules.
+ * Note: cmd still expands %VAR%/!VAR! inside quotes — an env read at worst, not RCE.
+ */
+export function quoteForCmd(arg: string): string {
+  const body = String(arg).replace(/(\\*)"/g, '$1$1""').replace(/(\\+)$/, '$1$1');
+  return `"${body}"`;
+}
+
 export async function executeCommand(
   command: string,
   args: string[],
@@ -8,11 +19,18 @@ export async function executeCommand(
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const startTime = Date.now();
+    const isWindows = process.platform === "win32";
+
+    // On Windows + Node 22+, spawning .cmd shims requires shell:true due to
+    // CVE-2024-27980 hardening. Every argument is quoted via quoteForCmd() so
+    // cmd metacharacters (& | < > ^ ( )) remain inert.
+    const spawnArgs = isWindows ? args.map(quoteForCmd) : args;
+
     Logger.commandExecution(command, args, startTime);
 
-    const childProcess = spawn(command, args, {
+    const childProcess = spawn(command, spawnArgs, {
       env: process.env,
-      shell: false,
+      shell: isWindows,
       stdio: ["ignore", "pipe", "pipe"],
     });
 
