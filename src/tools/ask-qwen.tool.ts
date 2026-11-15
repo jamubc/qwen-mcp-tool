@@ -27,6 +27,9 @@ export const askQwenTool: UnifiedTool = {
     const { prompt, model, sandbox, changeMode, chunkIndex, chunkCacheKey } = args; if (!prompt?.trim()) { throw new Error(ERROR_MESSAGES.NO_PROMPT_PROVIDED); }
   
     if (changeMode && chunkIndex && chunkCacheKey) {
+      if (typeof chunkCacheKey !== 'string' || !/^[a-f0-9]{8}$/.test(chunkCacheKey)) {
+        throw new Error(`Invalid chunkCacheKey format: "${chunkCacheKey}". Expected an 8-character hex string.`);
+      }
       return processChangeModeOutput(
         '', // empty for cache...
         chunkIndex as number,

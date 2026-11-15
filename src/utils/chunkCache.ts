@@ -59,29 +59,43 @@ export function cacheChunks(prompt: string, chunks: EditChunk[]): string {
  * @returns The cached chunks or null if expired/not found
  */
 export function getChunks(cacheKey: string): EditChunk[] | null {
+  // Validate format: must be exactly 8 lowercase hex chars (sha256 slice).
+  // Rejects path traversal payloads (../, absolute paths, etc.) at the source.
+  if (typeof cacheKey !== 'string' || !/^[a-f0-9]{8}$/.test(cacheKey)) {
+    Logger.debug(`Rejected invalid cacheKey format: ${JSON.stringify(cacheKey)}`);
+    return null;
+  }
+
   const filePath = path.join(CACHE_DIR, `${cacheKey}.json`);
-  
+
+  // Defense-in-depth: ensure the resolved path stays inside CACHE_DIR.
+  const resolved = path.resolve(filePath);
+  if (!resolved.startsWith(path.resolve(CACHE_DIR) + path.sep)) {
+    Logger.debug(`Rejected cacheKey escaping CACHE_DIR: ${cacheKey}`);
+    return null;
+  }
+
   try {
     if (!fs.existsSync(filePath)) {
       return null;
     }
-    
+
     const fileContent = fs.readFileSync(filePath, 'utf-8');
     const data: CacheEntry = JSON.parse(fileContent);
-    
+
     if (Date.now() - data.timestamp > CACHE_TTL) {
       fs.unlinkSync(filePath);
       Logger.debug(`Cache expired for ${cacheKey}, deleted file`);
       return null;
     }
-    
+
     Logger.debug(`Cache hit for ${cacheKey}, returning ${data.chunks.length} chunks`);
     return data.chunks;
   } catch (error) {
     Logger.debug(`Cache read error for ${cacheKey}: ${error}`);
-    try {
-      fs.unlinkSync(filePath); // Clean up bad file
-    } catch {}
+    // Intentionally not deleting the file on parse errors. The previous
+    // behaviour silently unlinked on any read failure, which created a DELETE
+    // path-traversal primitive when cacheKey was not validated upstream.
     return null;
   }
 }

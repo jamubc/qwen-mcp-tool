@@ -30,10 +30,15 @@ export const fetchChunkTool: UnifiedTool = {
   
   execute: async (args: any, onProgress?: (newOutput: string) => void): Promise<string> => {
     const { cacheKey, chunkIndex } = args;
-    
+
     Logger.toolInvocation('fetch-chunk', args);
+
+    if (typeof cacheKey !== 'string' || !/^[a-f0-9]{8}$/.test(cacheKey)) {
+      return `❌ Invalid cache key format: "${cacheKey}". Expected an 8-character hex string.`;
+    }
+
     Logger.debug(`Fetching chunk ${chunkIndex} with cache key: ${cacheKey}`);
-    
+
     // Retrieve cached chunks
     const chunks = getChunks(cacheKey);
     
