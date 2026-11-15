@@ -31,7 +31,7 @@ This is a simple Model Context Protocol (MCP) server that allows AI assistants t
 
 Before using this tool, ensure you have:
 
-1. **[Node.js](https://nodejs.org/)** (v16.0.0 or higher)
+1. **[Node.js](https://nodejs.org/)** (v18.0.0 or higher)
 2. **[Qwen Code CLI](https://github.com/QwenLM/qwen-code)** installed and configured
 
 
