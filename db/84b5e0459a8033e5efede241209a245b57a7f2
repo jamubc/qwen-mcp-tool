@@ -1,0 +1,31 @@
+CHANGELOG.md
+  s_ee2f11177b4ad8::t_06e3de561e1e05 3-12
+src/index.ts
+  s_ee2f11177b4ad8::t_cd04380f2f06c4 33
+README.md
+  s_ee2f11177b4ad8::t_0186c22f0cbbb3 34
+.github/workflows/ci.yml
+  s_ee2f11177b4ad8::t_f0bc1309a66563 5,7
+  s_ee2f11177b4ad8::t_0e2ea087903706 15
+package.json
+  s_ee2f11177b4ad8::t_db1a62ea4650d2 41
+  s_ee2f11177b4ad8::t_dce8cb67886b97 3
+package-lock.json
+  s_ee2f11177b4ad8::t_03033e4ecf83e4 3,9,30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "db84b5e0459a8033e5efede241209a245b57a7f2",
+  "prompts": {},
+  "sessions": {
+    "s_ee2f11177b4ad8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "028c9955-230c-463b-a09e-1bbbbecad766",
+        "model": "claude-fable-5-2"
+      },
+      "human_author": "jamubc <150970140+jamubc@users.noreply.github.com>"
+    }
+  }
+}
