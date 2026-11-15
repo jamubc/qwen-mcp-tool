@@ -1,6 +1,6 @@
 {
   "name": "qwen-mcp-tool",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP server for Qwen AI integration",
   "type": "module",
   "main": "dist/index.js",
@@ -38,7 +38,7 @@
   },
   "homepage": "https://github.com/jamubc/qwen-mcp-tool#readme",
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   },
   "files": [
     "dist/",
